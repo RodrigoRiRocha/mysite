@@ -35,4 +35,3 @@ for category in Category.objects.all():
     print(f'\n   {category.name} ({category.posts.count()} posts)')
     for post in category.posts.all():
         print(f'      - {post.title}')
-
