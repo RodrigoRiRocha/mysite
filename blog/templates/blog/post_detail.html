@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ post.title }}</title>
+</head>
+<body>
+    <main>
+        <p><a href="{% url 'post_list' %}">Voltar para a lista</a></p>
+
+        <article>
+            <h1>{{ post.title }}</h1>
+            <p>Autor: {{ post.author.username }}</p>
+            <p>Publicado em: {{ post.created_on|date:"d/m/Y H:i" }}</p>
+            <div>
+                {{ post.content|linebreaks }}
+            </div>
+        </article>
+
+        <section>
+            <h2>Comentários aprovados</h2>
+
+            {% if comments %}
+                <ul>
+                    {% for comment in comments %}
+                        <li>
+                            <p><strong>{{ comment.author.username }}</strong> em {{ comment.created_on|date:"d/m/Y H:i" }}</p>
+                            <p>{{ comment.content|linebreaks }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Ainda não há comentários aprovados.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>
