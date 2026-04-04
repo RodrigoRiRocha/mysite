@@ -5,9 +5,11 @@
 #   /blog/post/<slug>/     → PostDetailView (detalhe de um post)
 
 from django.urls import path
-from .views import PostDetailView, PostListView
+from .views import PostDetailView, PostListView, post_view
 
 urlpatterns = [
+    path('post/', post_view, name='post'),
+
     # path(rota, view, name) → 'name' permite referenciar a URL no template com {% url 'post_list' %}
     path('', PostListView.as_view(), name='post_list'),
 

@@ -24,6 +24,14 @@ def test_post_list_view(client):
 
 
 @pytest.mark.django_db
+def test_post_view(client):
+    url = reverse('post')
+    response = client.get(url)
+    assert response.status_code == 200
+    assert response.content == b'Minha view de Post'
+
+
+@pytest.mark.django_db
 def test_post_list_shows_only_published(client):
     # Garante que a view filtra corretamente: só posts com status=1 aparecem.
     from blog.tests.factories import PostFactory

@@ -3,8 +3,13 @@
 # o fluxo padrão (dispatch → get → render). Só sobrescrevemos o que precisamos customizar.
 
 from django.views.generic import DetailView, ListView
+from django.http import HttpResponse
 
 from .models import Post
+
+
+def post_view(request):
+	return HttpResponse('Minha view de Post')
 
 
 class PostListView(ListView):
