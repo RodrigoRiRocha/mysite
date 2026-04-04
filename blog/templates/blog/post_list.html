@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Blog | Lista de Posts</title>
+</head>
+<body>
+    <main>
+        <h1>Posts publicados</h1>
+
+        {% if posts %}
+            <ul>
+                {% for post in posts %}
+                    <li>
+                        <h2>
+                            <a href="{% url 'post_detail' post.slug %}">{{ post.title }}</a>
+                        </h2>
+                        <p>Autor: {{ post.author.username }}</p>
+                        <p>Criado em: {{ post.created_on|date:"d/m/Y H:i" }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nenhum post publicado ainda.</p>
+        {% endif %}
+    </main>
+</body>
+</html>
