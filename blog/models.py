@@ -5,12 +5,14 @@
 from django.db import models
 from django.contrib.auth.models import User  # Modelo de usuário já embutido no Django
 
-# Tupla de opções usada no campo 'status' do Post.
-# O primeiro valor (int) é o que fica no banco; o segundo é o que aparece na interface.
-STATUS = (
-    (0, 'Draft'),    # 0 = rascunho, não aparece no site
-    (1, 'Publish')   # 1 = publicado, visível para os visitantes
-)
+
+class PostStatus(models.IntegerChoices):
+    """
+    Choices for Post status using Django's IntegerChoices.
+    Provides better type safety and IDE autocomplete compared to magic tuple values.
+    """
+    DRAFT = 0, 'Draft'       # 0 = rascunho, não aparece no site
+    PUBLISHED = 1, 'Published'  # 1 = publicado, visível para os visitantes
 
 
 class Category(models.Model):
@@ -64,13 +66,17 @@ class Post(models.Model):
     updated_on = models.DateTimeField(auto_now=True)      # atualizado automaticamente a cada save()
     content = models.TextField()                          # conteúdo do post (texto longo)
     created_on = models.DateTimeField(auto_now_add=True)  # preenchido na criação, nunca muda
-    status = models.IntegerField(choices=STATUS, default=0)  # 0=rascunho, 1=publicado
+    status = models.IntegerField(choices=PostStatus, default=PostStatus.DRAFT)  # Draft ou Published
 
     class Meta:
         ordering = ['-created_on']  # '-' = ordem decrescente (posts mais novos primeiro)
 
     def __str__(self):
         return self.title
+    
+    def is_published(self) -> bool:
+        """Check if post is published."""
+        return self.status == PostStatus.PUBLISHED
 
 
 class Comment(models.Model):

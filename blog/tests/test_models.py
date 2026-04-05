@@ -1,6 +1,7 @@
 import pytest
 from django.utils.text import slugify
-from blog.models import Post, Category, Tag, Comment
+from django.db import IntegrityError
+from blog.models import Post, Category, Tag, Comment, PostStatus
 from django.contrib.auth.models import User
 
 
@@ -13,37 +14,55 @@ class TestPostModel:
             slug=slugify('Test Post'),
             author=user,
             content='Test content',
-            status=1
+            status=PostStatus.PUBLISHED
         )
         assert post.id is not None
         assert post.title == 'Test Post'
         assert post.author == user
-        assert post.status == 1
+        assert post.status == PostStatus.PUBLISHED
+    
+    def test_post_is_published_helper(self, user):
+        draft_post = Post.objects.create(
+            title='Draft Post',
+            slug='draft-post',
+            author=user,
+            content='Content',
+            status=PostStatus.DRAFT
+        )
+        published_post = Post.objects.create(
+            title='Published Post',
+            slug='published-post',
+            author=user,
+            content='Content',
+            status=PostStatus.PUBLISHED
+        )
+        assert not draft_post.is_published()
+        assert published_post.is_published()
 
     def test_post_string_representation(self, post):
         assert str(post) == post.title
 
     def test_post_slug_unique(self, user):
-        Post.objects.create(title='Unique Post', slug='unique-post', author=user, content='Content', status=1)
-        with pytest.raises(Exception):
-            Post.objects.create(title='Another Post', slug='unique-post', author=user, content='Content', status=1)
+        Post.objects.create(title='Unique Post', slug='unique-post', author=user, content='Content', status=PostStatus.PUBLISHED)
+        with pytest.raises(IntegrityError):
+            Post.objects.create(title='Another Post', slug='unique-post', author=user, content='Content', status=PostStatus.PUBLISHED)
 
     def test_post_ordering(self, user):
-        post1 = Post.objects.create(title='Post 1', slug='post-1', author=user, content='Content 1', status=1)
-        post2 = Post.objects.create(title='Post 2', slug='post-2', author=user, content='Content 2', status=1)
+        post1 = Post.objects.create(title='Post 1', slug='post-1', author=user, content='Content 1', status=PostStatus.PUBLISHED)
+        post2 = Post.objects.create(title='Post 2', slug='post-2', author=user, content='Content 2', status=PostStatus.PUBLISHED)
         posts = list(Post.objects.all())
         assert posts[0].id == post2.id
         assert posts[1].id == post1.id
 
     def test_post_can_have_multiple_categories(self, user):
-        post = Post.objects.create(title='Test Post', slug='test-post-categories', author=user, content='Test content', status=1)
+        post = Post.objects.create(title='Test Post', slug='test-post-categories', author=user, content='Test content', status=PostStatus.PUBLISHED)
         cat1 = Category.objects.create(name='Category 1')
         cat2 = Category.objects.create(name='Category 2')
         post.categories.add(cat1, cat2)
         assert post.categories.count() == 2
 
     def test_post_can_have_multiple_tags(self, user):
-        post = Post.objects.create(title='Test Post Tags', slug='test-post-tags', author=user, content='Test content', status=1)
+        post = Post.objects.create(title='Test Post Tags', slug='test-post-tags', author=user, content='Test content', status=PostStatus.PUBLISHED)
         tag1 = Tag.objects.create(name='Django')
         tag2 = Tag.objects.create(name='Python')
         tag3 = Tag.objects.create(name='Testing')
@@ -65,8 +84,8 @@ class TestCategoryModel:
 
     def test_category_related_posts(self, user):
         category = Category.objects.create(name='Django')
-        post1 = Post.objects.create(title='Post 1', slug='post-1', author=user, content='Content 1', status=1)
-        post2 = Post.objects.create(title='Post 2', slug='post-2', author=user, content='Content 2', status=1)
+        post1 = Post.objects.create(title='Post 1', slug='post-1', author=user, content='Content 1', status=PostStatus.PUBLISHED)
+        post2 = Post.objects.create(title='Post 2', slug='post-2', author=user, content='Content 2', status=PostStatus.PUBLISHED)
         post1.categories.add(category)
         post2.categories.add(category)
         assert category.posts.count() == 2
@@ -86,7 +105,7 @@ class TestTagModel:
 
     def test_tag_unique_name(self):
         Tag.objects.create(name='Django')
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             Tag.objects.create(name='Django')
 
 
