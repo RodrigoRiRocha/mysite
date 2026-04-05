@@ -5,7 +5,7 @@
 from django.views.generic import DetailView, ListView
 from django.http import HttpResponse
 
-from .models import Post
+from .models import Post, PostStatus
 
 
 def post_view(request):
@@ -21,11 +21,11 @@ class PostListView(ListView):
 	context_object_name = 'posts'         # nome da variável disponível no template ({{ posts }})
 
 	def get_queryset(self):
-		# Sobrescrevemos get_queryset() para filtrar apenas posts publicados (status=1).
+		# Sobrescrevemos get_queryset() para filtrar apenas posts publicados.
 		# select_related('author')              → faz JOIN com a tabela User (evita N+1 queries)
 		# prefetch_related('categories', 'tags') → busca M2M em queries separadas otimizadas
 		return (
-			Post.objects.filter(status=1)
+			Post.objects.filter(status=PostStatus.PUBLISHED)
 			.select_related('author')
 			.prefetch_related('categories', 'tags')
 		)
@@ -44,7 +44,7 @@ class PostDetailView(DetailView):
 	def get_queryset(self):
 		# Filtra apenas posts publicados. Se o slug existir mas for rascunho, retorna 404.
 		return (
-			Post.objects.filter(status=1)
+			Post.objects.filter(status=PostStatus.PUBLISHED)
 			.select_related('author')
 			.prefetch_related('categories', 'tags', 'comments__author')
 		)

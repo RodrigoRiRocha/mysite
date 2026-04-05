@@ -5,7 +5,7 @@
 import factory
 from faker import Faker
 from django.contrib.auth.models import User
-from blog.models import Post, Category, Tag, Comment
+from blog.models import Post, Category, Tag, Comment, PostStatus
 from django.utils.text import slugify
 
 
@@ -45,18 +45,20 @@ class TagFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Tag
 
-    name = factory.Faker('word')
+    # Use sequence to ensure unique tag names
+    name = factory.Sequence(lambda n: f'{fake.word()}-{n}')
 
 
 class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Post
+        skip_postgeneration_save = True
 
     title = factory.Faker('sentence', nb_words=6)                # título com 6 palavras aleatórias
     slug = factory.LazyAttribute(lambda obj: slugify(obj.title)) # gera o slug a partir do título
     author = factory.SubFactory(UserFactory)                     # cria um User automaticamente se não for passado
     content = factory.Faker('text', max_nb_chars=1000)
-    status = 1  # publicado por padrão nos testes
+    status = PostStatus.PUBLISHED  # publicado por padrão nos testes
 
     @factory.post_generation
     def categories(obj, create, extracted, **kwargs):

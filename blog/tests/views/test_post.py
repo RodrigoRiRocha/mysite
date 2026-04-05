@@ -4,6 +4,7 @@
 
 import pytest
 from django.urls import reverse
+from blog.models import PostStatus
 
 
 @pytest.mark.django_db
@@ -33,10 +34,10 @@ def test_post_view(client):
 
 @pytest.mark.django_db
 def test_post_list_shows_only_published(client):
-    # Garante que a view filtra corretamente: só posts com status=1 aparecem.
+    # Garante que a view filtra corretamente: só posts com status publicado aparecem.
     from blog.tests.factories import PostFactory
-    PostFactory(status=1)  # post publicado — deve aparecer
-    PostFactory(status=0)  # rascunho — NÃO deve aparecer
+    PostFactory(status=PostStatus.PUBLISHED)  # post publicado — deve aparecer
+    PostFactory(status=PostStatus.DRAFT)      # rascunho — NÃO deve aparecer
     url = reverse('post_list')
     response = client.get(url)
     assert response.status_code == 200
@@ -48,7 +49,7 @@ def test_post_list_shows_only_published(client):
 def test_post_detail_view(client):
     # Verifica se a página de detalhe de um post publicado carrega corretamente.
     from blog.tests.factories import PostFactory
-    post = PostFactory(status=1)
+    post = PostFactory(status=PostStatus.PUBLISHED)
     # reverse com kwargs monta a URL: /blog/post/<slug>/
     url = reverse('post_detail', kwargs={'slug': post.slug})
     response = client.get(url)
@@ -58,9 +59,9 @@ def test_post_detail_view(client):
 
 @pytest.mark.django_db
 def test_post_detail_404_for_draft(client):
-    # Garante que posts com status=0 (rascunho) retornam 404 e não ficam acessíveis pela URL.
+    # Garante que posts com status draft retornam 404 e não ficam acessíveis pela URL.
     from blog.tests.factories import PostFactory
-    post = PostFactory(status=0)
+    post = PostFactory(status=PostStatus.DRAFT)
     url = reverse('post_detail', kwargs={'slug': post.slug})
     response = client.get(url)
     assert response.status_code == 404  # 404 = Not Found

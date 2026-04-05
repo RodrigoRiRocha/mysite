@@ -1,5 +1,6 @@
 import pytest
 from blog.tests.factories import UserFactory, PostFactory, CategoryFactory, TagFactory, CommentFactory
+from blog.models import PostStatus
 
 
 @pytest.mark.django_db
@@ -25,7 +26,7 @@ class TestFactoriesIntegration:
         post = PostFactory()
         assert post.id is not None
         assert post.author is not None
-        assert post.status == 1
+        assert post.status == PostStatus.PUBLISHED
         assert post.categories.count() > 0
         assert post.tags.count() > 0
 
