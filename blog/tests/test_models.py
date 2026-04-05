@@ -1,5 +1,6 @@
 import pytest
 from django.utils.text import slugify
+from django.db import IntegrityError
 from blog.models import Post, Category, Tag, Comment, PostStatus
 from django.contrib.auth.models import User
 
@@ -43,7 +44,7 @@ class TestPostModel:
 
     def test_post_slug_unique(self, user):
         Post.objects.create(title='Unique Post', slug='unique-post', author=user, content='Content', status=PostStatus.PUBLISHED)
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             Post.objects.create(title='Another Post', slug='unique-post', author=user, content='Content', status=PostStatus.PUBLISHED)
 
     def test_post_ordering(self, user):
@@ -104,7 +105,7 @@ class TestTagModel:
 
     def test_tag_unique_name(self):
         Tag.objects.create(name='Django')
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             Tag.objects.create(name='Django')
 
 
